@@ -1,0 +1,6 @@
+{
+  "java.project.sourcePaths": [
+    "inteliCalc/src"
+  ],
+  "java.project.outputPath": "inteliCalc/bin"
+}

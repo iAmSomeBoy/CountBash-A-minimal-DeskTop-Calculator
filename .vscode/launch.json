@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run CountBash",
+      "request": "launch",
+      "mainClass": "inteliCalc.CountBash",
+      "cwd": "${workspaceFolder}/inteliCalc"
+    }
+  ]
+}
