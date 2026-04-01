@@ -47,6 +47,8 @@ public class CountBash {
 	double total;
 	String action;
 	String answer;
+	
+	private static final String ERROR_TEXT = "Error";
 
 	/**
 	 * Launch the application.
@@ -134,6 +136,7 @@ public class CountBash {
 		btn_sin = new JButton("sin");
 		btn_sin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				applyUnary(value -> Math.sin(Math.toRadians(value)));
 			}
 		});
 		btn_sin.setFont(new Font("Comic Sans MS", Font.BOLD | Font.ITALIC, 15));
@@ -143,6 +146,7 @@ public class CountBash {
 		btn_cos = new JButton("cos");
 		btn_cos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				applyUnary(value -> Math.cos(Math.toRadians(value)));
 			}
 		});
 		btn_cos.setFont(new Font("Comic Sans MS", Font.BOLD | Font.ITALIC, 15));
@@ -183,6 +187,11 @@ public class CountBash {
 		frame.getContentPane().add(btn2);
 		
 		btn_tan = new JButton("tan");
+		btn_tan.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				applyUnary(value -> Math.tan(Math.toRadians(value)));
+			}
+		});
 		btn_tan.setFont(new Font("Comic Sans MS", Font.BOLD | Font.ITALIC, 14));
 		btn_tan.setBounds(138, 80, 58, 47);
 		frame.getContentPane().add(btn_tan);
@@ -234,24 +243,33 @@ public class CountBash {
 		btn_equal = new JButton("=");
 		btn_equal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int2 = Double.parseDouble(textField.getText());
-				if(action== "+") {
-					total= int1+ int2;
-					answer= String.format("%.1f + %.1f= %.1f", int1, int2, total);
-					textField.setText(answer);
-				}else if(action== "-") {
-					total= int1- int2;
-					answer= String.format("%.1f - %.1f= %.1f", int1, int2, total);
-					textField.setText(answer);
-				}else if(action== "*") {
-					total= int1* int2;
-					answer= String.format("%.1f * %.1f= %.1f", int1, int2, total);
-					textField.setText(answer);
-				}else if(action== "/") {
-					total= int1/ int2;
-					answer= String.format("%.1f / %.1f= %.1f", int1, int2, total);
-					textField.setText(answer);
+				Double value = getFieldValue();
+				if(value == null || action == null) {
+					return;
 				}
+				int2 = value;
+				if("+".equals(action)) {
+					total= int1+ int2;
+					textField.setText(formatResult(total));
+				}else if("-".equals(action)) {
+					total= int1- int2;
+					textField.setText(formatResult(total));
+				}else if("*".equals(action)) {
+					total= int1* int2;
+					textField.setText(formatResult(total));
+				}else if("/".equals(action)) {
+					if(int2 == 0) {
+						textField.setText(ERROR_TEXT);
+						action = null;
+						return;
+					}
+					total= int1/ int2;
+					textField.setText(formatResult(total));
+				}else if("^".equals(action)) {
+					total = Math.pow(int1, int2);
+					textField.setText(formatResult(total));
+				}
+				action = null;
 			}
 		});
 		btn_equal.setFont(new Font("Zen Dots", Font.PLAIN, 25));
@@ -261,9 +279,7 @@ public class CountBash {
 		btn_division = new JButton("/");
 		btn_division.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int1 = Double.parseDouble(textField.getText());
-				textField.setText("");
-				action= "/";
+				setBinaryAction("/");
 			}
 		});
 		btn_division.setFont(new Font("Zen Dots", Font.PLAIN, 25));
@@ -289,6 +305,17 @@ public class CountBash {
 		btn_fact = new JButton("x!");
 		btn_fact.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				Double value = getFieldValue();
+				if(value == null || value < 0 || value % 1 != 0) {
+					textField.setText(ERROR_TEXT);
+					return;
+				}
+				long result = 1;
+				int n = value.intValue();
+				for (int i = 2; i <= n; i++) {
+					result *= i;
+				}
+				textField.setText(String.valueOf(result));
 			}
 		});
 		btn_fact.setFont(new Font("Bookman Old Style", Font.BOLD | Font.ITALIC, 22));
@@ -296,31 +323,75 @@ public class CountBash {
 		frame.getContentPane().add(btn_fact);
 		
 		btn_log = new JButton("log");
+		btn_log.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Double value = getFieldValue();
+				if(value == null || value <= 0) {
+					textField.setText(ERROR_TEXT);
+					return;
+				}
+				textField.setText(formatResult(Math.log10(value)));
+			}
+		});
 		btn_log.setFont(new Font("Comic Sans MS", Font.BOLD | Font.ITALIC, 15));
 		btn_log.setBounds(201, 193, 58, 47);
 		frame.getContentPane().add(btn_log);
 		
 		btn_power = new JButton("x^n");
+		btn_power.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setBinaryAction("^");
+			}
+		});
 		btn_power.setFont(new Font("Comic Sans MS", Font.BOLD | Font.ITALIC, 13));
 		btn_power.setBounds(201, 248, 58, 47);
 		frame.getContentPane().add(btn_power);
 		
 		btn_cube = new JButton("x^3");
+		btn_cube.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				applyUnary(value -> Math.pow(value, 3));
+			}
+		});
 		btn_cube.setFont(new Font("Comic Sans MS", Font.BOLD | Font.ITALIC, 13));
 		btn_cube.setBounds(263, 138, 58, 47);
 		frame.getContentPane().add(btn_cube);
 		
 		btn_sqr = new JButton("x^2");
+		btn_sqr.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				applyUnary(value -> Math.pow(value, 2));
+			}
+		});
 		btn_sqr.setFont(new Font("Bookman Old Style", Font.BOLD | Font.ITALIC, 12));
 		btn_sqr.setBounds(263, 193, 58, 47);
 		frame.getContentPane().add(btn_sqr);
 		
 		btn_root = new JButton("sqrt");
+		btn_root.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Double value = getFieldValue();
+				if(value == null || value < 0) {
+					textField.setText(ERROR_TEXT);
+					return;
+				}
+				textField.setText(formatResult(Math.sqrt(value)));
+			}
+		});
 		btn_root.setFont(new Font("Comic Sans MS", Font.BOLD | Font.ITALIC, 12));
 		btn_root.setBounds(263, 248, 58, 47);
 		frame.getContentPane().add(btn_root);
 		
 		btn_clr = new JButton("C");
+		btn_clr.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				textField.setText("");
+				action = null;
+				int1 = 0;
+				int2 = 0;
+				total = 0;
+			}
+		});
 		btn_clr.setFont(new Font("Zen Dots", Font.PLAIN, 25));
 		btn_clr.setBounds(269, 80, 159, 47);
 		frame.getContentPane().add(btn_clr);
@@ -328,9 +399,7 @@ public class CountBash {
 		btn_plus = new JButton("+");
 		btn_plus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int1 = Double.parseDouble(textField.getText());
-				textField.setText("");
-				action= "+";
+				setBinaryAction("+");
 			}
 		});
 		btn_plus.setFont(new Font("Zen Dots", Font.PLAIN, 25));
@@ -340,9 +409,7 @@ public class CountBash {
 		btn_minus = new JButton("-");
 		btn_minus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int1 = Double.parseDouble(textField.getText());
-				textField.setText("");
-				action= "-";
+				setBinaryAction("-");
 			}
 		});
 		btn_minus.setFont(new Font("Zen Dots", Font.PLAIN, 25));
@@ -352,13 +419,53 @@ public class CountBash {
 		btn_mlti = new JButton("*");
 		btn_mlti.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int1 = Double.parseDouble(textField.getText());
-				textField.setText("");
-				action= "*";
+				setBinaryAction("*");
 			}
 		});
 		btn_mlti.setFont(new Font("Zen Dots", Font.PLAIN, 25));
 		btn_mlti.setBounds(327, 248, 101, 47);
 		frame.getContentPane().add(btn_mlti);
+	}
+	
+	private interface UnaryOperation {
+		double apply(double value);
+	}
+	
+	private void applyUnary(UnaryOperation operation) {
+		Double value = getFieldValue();
+		if(value == null) {
+			return;
+		}
+		textField.setText(formatResult(operation.apply(value)));
+	}
+	
+	private void setBinaryAction(String operation) {
+		Double value = getFieldValue();
+		if(value == null) {
+			return;
+		}
+		int1 = value;
+		action = operation;
+		textField.setText("");
+	}
+	
+	private Double getFieldValue() {
+		String text = textField.getText();
+		if(text == null || text.trim().isEmpty() || ERROR_TEXT.equals(text)) {
+			return null;
+		}
+		try {
+			return Double.parseDouble(text.trim());
+		} catch (NumberFormatException ex) {
+			textField.setText(ERROR_TEXT);
+			return null;
+		}
+	}
+	
+	private String formatResult(double value) {
+		if (Double.isNaN(value) || Double.isInfinite(value)) {
+			return ERROR_TEXT;
+		}
+		return String.format("%.6f", value).replaceAll("\\.?0+$", "");
 	}
 }
