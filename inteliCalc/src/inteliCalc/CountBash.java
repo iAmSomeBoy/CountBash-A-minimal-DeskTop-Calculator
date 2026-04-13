@@ -1,14 +1,8 @@
 package inteliCalc;
 
-import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import javax.swing.JTextField;
-import java.awt.Font;
-import javax.swing.JButton;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import javax.swing.SwingConstants;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 public class CountBash {
 
